@@ -16,9 +16,10 @@ fractal_lacunarity = 2.665
 fractal_gain = 0.59
 fractal_weighted_strength = 0.7
 
-[node name="Terrain" type="Node3D"]
+[node name="Terrain" type="Node3D" node_paths=PackedStringArray("set_camera")]
 script = ExtResource("1_gaya0")
+set_camera = NodePath("Camera3D")
 set_noise_layer = Array[FastNoiseLite]([SubResource("FastNoiseLite_gaya0"), SubResource("FastNoiseLite_1npqb")])
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 516.411, 28.9432, 13.4354)
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -2546.67, 72.9382, -534.972)

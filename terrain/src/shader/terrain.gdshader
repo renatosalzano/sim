@@ -3,7 +3,7 @@ shader_type spatial;
 uniform float level;
 uniform vec2 index;
 uniform sampler2D heightmap: filter_nearest;
-uniform float height_scale = 50.;
+uniform float height_scale = 100.;
 
 uniform bool is_tile;
 uniform int LOD;
@@ -128,7 +128,7 @@ void fragment() {
 	float edge = 0.02;
 	if (UV2.x < edge || UV2.y < edge) {
 		//ALBEDO = color;
-		//ALBEDO += vec3(0,0.4,0);
+		ALBEDO += vec3(0,0.4,0);
 	}
 	// Called for every pixel the material is visible on.
 }

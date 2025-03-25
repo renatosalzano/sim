@@ -22,8 +22,11 @@ class_name Terrain extends Node3D
 
 @export_tool_button("Generate") var set_generate = generate;
 			
-
+var camera_position:= Vector3.ZERO
+var chunks:= Node3D.new()
 var timer:= PrintTimer.new()
+
+signal on_camera_move
 
 # get noia
 func get_noise(x: float, y: float) -> float:
@@ -35,31 +38,31 @@ func get_noise(x: float, y: float) -> float:
 	return value
 
 
-func _init() -> void:
+func _ready() -> void:
+	add_child(chunks)
+		
 	pass
+
+
+func _process(_delta: float) -> void:
+	if set_camera:
+		if camera_position != set_camera.global_position:
+			camera_position = set_camera.global_position
+			# printraw('\r camera move')
+			on_camera_move.emit()
+
 
 func generate() -> void:
 	print("generate start")
 	
 	var compute:= Compute.new()
 
-	# for x in 2:
-	# 	for y in 2:
-	# 		var index:= Vector2(x,y)
-	# 		timer.start()
-	# 		var img:= compute.gpu_heightmap(513, index, 4)
-	# 		timer.end('computed texture')
-	# 		# var path:= "res://tile_{x}{y}.jpg"
-	# 		# img.save_jpg(path.format({x=x,y=y}))
+	remove_child(chunks)
+	chunks.queue_free()
 
+	chunks = Node3D.new()
 
-	# # test.save_png("res://test.png")
-	# return;
-
-	for child in get_children():
-		if child is Chunk:
-			child.queue_free()
-			remove_child(child)
+	add_child(chunks)
 
 	var meshes:= {
 		chunk = generate_chunk_mesh(),
@@ -97,11 +100,8 @@ func create_chunk(index: Vector2i, meshes: Dictionary, heightmap: ImageTexture) 
 			(index.y * 2048) - 512
 		)
 
-	add_child(chunk)
-
-
-
-
+	chunks.add_child(chunk)
+	on_camera_move.connect(chunk.check_distance.bind(camera_position))
 
 
 func generate_chunk_mesh(size:= 2048, min_size:= 512, output:= []) -> Array:

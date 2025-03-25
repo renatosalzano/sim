@@ -56,7 +56,7 @@ func disable():
 	each(func(tile): tile.set_lod(-1))
 
 
-func update(camera_position: Vector3):
+func check_distance(camera_position: Vector3):
 	# printraw("\r" + str(camera_position))
 
 	each(func(tile):

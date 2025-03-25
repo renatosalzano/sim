@@ -4,11 +4,12 @@ var shader: Shader = preload("./shader/terrain.gdshader")
 
 var index: Vector2i
 var level:= 0
-var is_leaf:= false
 
 var chunk_mesh: Mesh
 var radius: float
+var divided:= false
 
+var is_leaf:= false
 var leaf: Leaf
 
 func _init(_index: Vector2i, _meshes: Dictionary, _heightmap: ImageTexture, _size:= 2048, _level:= 0) -> void:
@@ -54,12 +55,65 @@ func _init(_index: Vector2i, _meshes: Dictionary, _heightmap: ImageTexture, _siz
 				))
 
 				
+
 	else:
 		is_leaf = true
 		leaf = Leaf.new(index, 512, _meshes.leaf, _heightmap)
 
 	pass
 
+
+
+
+func check_distance(camera_position: Vector3):
+
+	printraw('\r check distance ' + str(camera_position))
+
+	if is_leaf && divided:
+		leaf.check_distance(camera_position)
+
+	var distance:= camera_position.distance_to(global_position) - 384 # max lod in tile
+
+	if distance < radius:
+		# printraw("\r inside")
+		if !divided:
+			divided = true
+			subdivide()
+		else:
+			each(func(q): q.check_distance(camera_position))
+	else:
+		# printraw("\r outside")
+		if divided:
+			divided = false
+			combine(level)
+
+
+func subdivide():
+	# if leaf: return
+	# mesh = null
+	# each(func(q): q.mesh = q._mesh)
+	mesh = null
+	if is_leaf:
+		leaf.enable()
+	else:
+		each(func(q): q.mesh = q.chunk_mesh)
+
+
+func combine(_level: int):
+	if leaf:
+		leaf.disable()
+	
+	mesh = chunk_mesh if level == _level else null
+	each(func(q):
+		q.divided = false
+		q.combine(_level)
+	)
+
+
+func each(callback: Callable):
+	for quad in get_children():
+		if quad is Chunk:
+			callback.call(quad)
 
 func set_shader(params: Dictionary) -> void:
 	for k in params:
