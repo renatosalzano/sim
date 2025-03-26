@@ -21,25 +21,18 @@ class_name Terrain extends Node3D
 			set_noise_layer = [FastNoiseLite.new()]
 
 @export_tool_button("Generate") var set_generate = generate;
+# @export_tool_button("GPU COMPUTE") var set_gpu_compute = gpu_generate;
 			
 var camera_position:= Vector3.ZERO
 var chunks:= Node3D.new()
 var timer:= PrintTimer.new()
 
-signal on_camera_move
 
-# get noia
-func get_noise(x: float, y: float) -> float:
-	var value:= 0.0
-	for noise: FastNoiseLite in set_noise_layer:
-		value += noise.get_noise_2d(x,y) / set_noise_layer.size()
-	
-	value = value + 1.0 * 0.5 # 0.0 - 1.0
-	return value
-
+signal on_camera_move(position: Vector3)
 
 func _ready() -> void:
 	add_child(chunks)
+	# generate()
 		
 	pass
 
@@ -49,7 +42,7 @@ func _process(_delta: float) -> void:
 		if camera_position != set_camera.global_position:
 			camera_position = set_camera.global_position
 			# printraw('\r camera move')
-			on_camera_move.emit()
+			on_camera_move.emit(camera_position)
 
 
 func generate() -> void:
@@ -69,6 +62,11 @@ func generate() -> void:
 		leaf = generate_leaf_mesh()
 	}
 
+	var offset:= Vector2(
+		(set_chunk.x - 1) * -2048 / 2.0,
+		(set_chunk.y - 1) * -2048 / 2.0
+	)
+
 	for x in set_chunk.x:
 		for y in set_chunk.y:
 			var index:= Vector2i(x,y)
@@ -78,7 +76,7 @@ func generate() -> void:
 			print(hm_image.get_size())
 			timer.end('generate heightmap 2049')
 
-			create_chunk.call_deferred(index, meshes, hm)
+			create_chunk.call_deferred(index, offset, meshes, hm)
 
 			pass
 	# hm.normal.save_jpg('res://hm_n.jpg')
@@ -90,18 +88,18 @@ func generate() -> void:
 	# add_child(test)
 
 	
-func create_chunk(index: Vector2i, meshes: Dictionary, heightmap: ImageTexture) -> void:
+func create_chunk(index: Vector2i, offset: Vector2, meshes: Dictionary, heightmap: ImageTexture) -> void:
 
 	var chunk:= Chunk.new(index, meshes, heightmap)
 
 	chunk.position = Vector3(
-			(index.x * 2048) - 512,
+			offset.x + (index.x * 2048),
 			0,
-			(index.y * 2048) - 512
+			offset.y + (index.y * 2048)
 		)
 
 	chunks.add_child(chunk)
-	on_camera_move.connect(chunk.check_distance.bind(camera_position))
+	on_camera_move.connect(chunk.check_distance)
 
 
 func generate_chunk_mesh(size:= 2048, min_size:= 512, output:= []) -> Array:

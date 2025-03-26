@@ -1,25 +1,31 @@
-[gd_scene load_steps=4 format=3 uid="uid://cupct2xf5tegy"]
+[gd_scene load_steps=5 format=3 uid="uid://cupct2xf5tegy"]
 
 [ext_resource type="Script" uid="uid://d38amdgqdv5n6" path="res://terrain/terrain.gd" id="1_gaya0"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_gaya0"]
+frequency = 0.0034
+fractal_octaves = 3
+fractal_gain = 0.54
+fractal_weighted_strength = 0.32
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_7mqxp"]
 noise_type = 3
-frequency = 0.0019
-fractal_lacunarity = 2.045
-fractal_gain = 0.455
-fractal_weighted_strength = 0.45
+frequency = 0.008
+fractal_octaves = 3
+fractal_weighted_strength = 0.7
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_1npqb"]
 frequency = 0.0006
 fractal_type = 2
-fractal_lacunarity = 2.665
-fractal_gain = 0.59
-fractal_weighted_strength = 0.7
+fractal_lacunarity = 3.6
+fractal_gain = 0.485
+fractal_weighted_strength = 1.0
 
 [node name="Terrain" type="Node3D" node_paths=PackedStringArray("set_camera")]
 script = ExtResource("1_gaya0")
 set_camera = NodePath("Camera3D")
-set_noise_layer = Array[FastNoiseLite]([SubResource("FastNoiseLite_gaya0"), SubResource("FastNoiseLite_1npqb")])
+set_chunk = Vector2i(3, 3)
+set_noise_layer = Array[FastNoiseLite]([SubResource("FastNoiseLite_gaya0"), SubResource("FastNoiseLite_7mqxp"), SubResource("FastNoiseLite_1npqb")])
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -2546.67, 72.9382, -534.972)
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -2460.45, 72.9382, -534.972)

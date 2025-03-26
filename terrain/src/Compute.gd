@@ -1,6 +1,6 @@
 class_name Compute extends Object
 
-var shader_data: RDShaderFile = preload("res://terrain/src/shader/heightmap.glsl")
+var shader_data: RDShaderFile = preload("res://terrain/src/shader/hm_fnoise.glsl")
 
 var rd: RenderingDevice
 

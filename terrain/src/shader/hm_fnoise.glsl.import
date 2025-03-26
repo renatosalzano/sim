@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://dkms3txydaohp"
+path="res://.godot/imported/hm_fnoise.glsl-9c4b6127362676e39e7c303f30fda2a5.res"
+
+[deps]
+
+source_file="res://terrain/src/shader/hm_fnoise.glsl"
+dest_files=["res://.godot/imported/hm_fnoise.glsl-9c4b6127362676e39e7c303f30fda2a5.res"]
+
+[params]
+

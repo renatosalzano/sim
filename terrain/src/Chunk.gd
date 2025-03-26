@@ -23,7 +23,7 @@ func _init(_index: Vector2i, _meshes: Dictionary, _heightmap: ImageTexture, _siz
 	material_override.shader = shader
 
 	set_shader({
-		level = 0,
+		level = level,
 		index = index,
 		heightmap = _heightmap
 	})
@@ -59,6 +59,7 @@ func _init(_index: Vector2i, _meshes: Dictionary, _heightmap: ImageTexture, _siz
 	else:
 		is_leaf = true
 		leaf = Leaf.new(index, 512, _meshes.leaf, _heightmap)
+		add_child(leaf)
 
 	pass
 

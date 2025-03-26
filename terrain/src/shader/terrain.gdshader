@@ -12,6 +12,12 @@ uniform float max_distance_LOD;
 uniform vec3 global_position;
 uniform vec3 camera_position;
 
+float get_height(vec2 uv) {
+	float value =  texture(heightmap, uv).r * height_scale;
+	value = pow(value, 1.4);
+	return value;
+}
+
 int calc_LOD(vec3 next_tile) {
 	float distance_to = distance(camera_position, next_tile);
 
@@ -47,8 +53,8 @@ bool LOD_is_lower(vec3 next_tile) {
 }
 
 float calc_middle(vec2 uv, vec2 offset) {
-	float h1 = texture(heightmap, vec2(uv.x - offset.x, uv.y - offset.y)).r * height_scale;
-	float h2 = texture(heightmap, vec2(uv.x + offset.x, uv.y + offset.y)).r * height_scale;
+	float h1 = get_height(vec2(uv.x - offset.x, uv.y - offset.y));
+	float h2 = get_height(vec2(uv.x + offset.x, uv.y + offset.y));
 	return mix(h1, h2, 0.5);
 }
 
@@ -70,7 +76,7 @@ void vertex() {
 
 	UV = offset + vec2(half_pixel, half_pixel) + vec2(float(x) * pixel, float(y) * pixel);
 
-	VERTEX.y = texture(heightmap, UV).r * height_scale;
+	VERTEX.y = get_height(UV);
 
 	if (is_tile) {
 
@@ -113,12 +119,7 @@ void vertex() {
 			}
 
 		}
-
-
 	}
-
-
-
 }
 
 void fragment() {

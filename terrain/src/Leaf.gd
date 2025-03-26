@@ -11,8 +11,6 @@ func _init(i: Vector2i, size: int, meshes: Array, hm: ImageTexture) -> void:
 
 	index = i
 
-	add_child(tiles)
-
 	var tile_size:= 64
 	# var tile_count:= size / tile_size
 
@@ -28,6 +26,7 @@ func _init(i: Vector2i, size: int, meshes: Array, hm: ImageTexture) -> void:
 
 	# print(lods)
 
+	add_child(tiles)
 
 	for x in 8:
 		for y in 8:
@@ -40,11 +39,13 @@ func _init(i: Vector2i, size: int, meshes: Array, hm: ImageTexture) -> void:
 			tile.translate(reposition)
 			tiles.add_child(tile)
 
+	
+
 
 func enable():
 	# print('max lod ', lods[-1])
-	if Engine.is_editor_hint():
-		camera = EditorInterface.get_editor_viewport_3d().get_camera_3d()
+	# if Engine.is_editor_hint():
+	# 	camera = EditorInterface.get_editor_viewport_3d().get_camera_3d()
 	each(func(tile): 
 		tile.set_lod(tile.min_lod)
 		tile.set_shader({ global_position = tile.global_position })
@@ -101,7 +102,7 @@ class Tile extends MeshInstance3D:
 	var material:= ShaderMaterial.new()
 	var min_lod:= 0
 
-	func _init(i: Vector2i, _meshes: Array, shader: Shader, hm: ImageTexture) -> void:
+	func _init(i: Vector2i, _meshes: Array, shader: Shader, _heightmap: ImageTexture) -> void:
 		index = i
 		meshes = _meshes
 		min_lod = _meshes.size() - 1
@@ -113,7 +114,7 @@ class Tile extends MeshInstance3D:
 		material_override = material
 		material_override.shader = shader
 
-		material_override.set_shader_parameter("hm", hm)
+		material_override.set_shader_parameter("heightmap", _heightmap)
 		material_override.set_shader_parameter("level", level)
 		material_override.set_shader_parameter("index", index)
 		material_override.set_shader_parameter("is_tile", true)
