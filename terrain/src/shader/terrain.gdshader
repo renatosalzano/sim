@@ -12,10 +12,10 @@ uniform float max_distance_LOD;
 uniform vec3 global_position;
 uniform vec3 camera_position;
 
-uniform int LOD_0 = 0;
-uniform int LOD_1 = 0;
-uniform int LOD_2 = 0;
-uniform int LOD_3 = 0;
+uniform int LOD_TOP = 0;
+uniform int LOD_BOTTOM = 0;
+uniform int LOD_LEFT = 0;
+uniform int LOD_RIGHT = 0;
 
 float get_height(vec2 uv) {
 	float value =  texture(heightmap, uv).r * height_scale;
@@ -40,27 +40,6 @@ int calc_LOD(vec3 next_tile) {
 	}
 
 	return LOD;
-
-}
-
-bool LOD_is_lower(vec3 next_tile) {
-	next_tile.y = 0.0;
-	vec3 a = vec3(camera_position.x, 0.0, camera_position.z);
-	float next_tile_height = get_height(next_tile.xz);
-	vec3 b = vec3(next_tile.x, next_tile_height, next_tile.z);
-	float distance_to = distance(camera_position, b);
-
-	if (distance_to >= max_distance_LOD) {
-		return LOD < min_LOD;
-	}
-
-	for (int x = 1; x <= min_LOD; ++x) {
-		if (distance_to < float(x * 64)) {
-			return LOD < x;
-		}
-	}
-
-	return false;
 
 }
 
@@ -104,7 +83,7 @@ void vertex() {
 		// LOD
 		if (VERTEX_ID % 2 != 0) {
 
-			if (LOD_0 > LOD) {
+			if (LOD_TOP > LOD) {
 				if (UV2.y == 0.0) {
 					//float h1 = texture(heightmap, vec2(UV.x - vertex_step, UV.y)).r * height_scale;
 					//float h2 = texture(heightmap, vec2(UV.x + vertex_step, UV.y)).r * height_scale;
@@ -112,19 +91,19 @@ void vertex() {
 				}
 			}
 
-			if (LOD_1 > LOD) {
+			if (LOD_BOTTOM > LOD) {
 				if (UV2.y > 0.99) {
 					VERTEX.y = calc_middle(UV, vec2(vertex_step, 0));
 				}
 			}
 
-			if (LOD_2 > LOD) {
+			if (LOD_LEFT > LOD) {
 				if (UV2.x == 0.0) {
 					VERTEX.y = calc_middle(UV, vec2(0, vertex_step));
 				}
 			}
 
-			if (LOD_3 > LOD) {
+			if (LOD_RIGHT > LOD) {
 				if (UV2.x > 0.99) {
 					VERTEX.y = calc_middle(UV, vec2(0, vertex_step));
 				}
@@ -135,18 +114,21 @@ void vertex() {
 }
 
 void fragment() {
-
-
 	ALBEDO = texture(heightmap, UV).rrr;
 	float edge = 0.02;
+
 	if (UV2.x < edge || UV2.y < edge) {
 		//ALBEDO = color;
 		ALBEDO += vec3(0,0.4,0);
 	}
-	
-	if (LOD_0 > 0) {
-		ALBEDO = vec3(0,0.4,0);
+
+	if (LOD_TOP > LOD && UV2.y < edge) {
+		ALBEDO = vec3(1.,0,0);
 	}
+
+	//if (LOD_0 > 0) {
+		//ALBEDO = vec3(0,0.4,0);
+	//}
 	// Called for every pixel the material is visible on.
 }
 

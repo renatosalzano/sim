@@ -37,7 +37,6 @@ func create() -> void:
 	var chunks:= 2
 
 	var _size:= (size - 1) / chunks
-	print(_size)
 
 	# var lt:= Time.get_ticks_msec()
 	# var idx:= 0
@@ -50,7 +49,7 @@ func create() -> void:
 			WorkerThreadPool.add_task(thread_region.bind(x_size, y_size, index))
 			# idx += 1
 
-	print('processing')
+	# print('processing')
 	await process
 
 	heightmap.update(image)

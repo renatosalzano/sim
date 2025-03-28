@@ -28,4 +28,4 @@ set_height = 0.25
 set_noise_layer = Array[FastNoiseLite]([SubResource("FastNoiseLite_gaya0"), SubResource("FastNoiseLite_7mqxp"), SubResource("FastNoiseLite_1npqb")])
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, -0.000683002, -0.000514678, 0.000739819, 0.388979, 0.921246, -0.000429014, -0.921246, 0.38898, -1765.51, 247.829, -724.847)
+transform = Transform3D(1, -0.000683002, -0.000514678, 0.000739819, 0.388979, 0.921246, -0.000429014, -0.921246, 0.388979, -1504.68, 247.829, -404.59)

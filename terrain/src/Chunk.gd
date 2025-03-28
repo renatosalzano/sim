@@ -13,9 +13,20 @@ var is_leaf:= false
 var leafs: Array[Leaf] = []
 var leaf: Leaf
 
-func _init(_index: Vector2i, _meshes: Dictionary, _heightmap: ImageTexture, _heightmap_height: float, _size:= 2048, _level:= 0) -> void:
+func _init(
+	_index: Vector2i, 
+	_meshes: Dictionary, 
+	_heightmap: ImageTexture, 
+	_heightmap_height: float, 
+	_size:= 2048, 
+	_level:= 0,
+	_root_index:= Vector2i(0,0)
+) -> void:
+
 	index = _index
 	level = _level
+
+	_root_index = _index if level == 0 else _root_index
 	
 	var l:= pow(_size, 2)
 	radius = sqrt(l + l) / 2.0
@@ -46,7 +57,7 @@ func _init(_index: Vector2i, _meshes: Dictionary, _heightmap: ImageTexture, _hei
 		for y in 2:
 			for x in 2:
 				var child_index:= Vector2i((index.x * 2) + x, (index.y * 2) + y) if level > 0 else Vector2i(x,y)
-				var child:= Chunk.new(child_index, _meshes, _heightmap, _heightmap_height, child_size, level + 1)
+				var child:= Chunk.new(child_index, _meshes, _heightmap, _heightmap_height, child_size, level + 1, _root_index)
 
 				add_child(child)
 
@@ -60,7 +71,7 @@ func _init(_index: Vector2i, _meshes: Dictionary, _heightmap: ImageTexture, _hei
 
 	else:
 		is_leaf = true
-		leaf = Leaf.new(index, 512, _meshes.leaf, _heightmap, _heightmap_height)
+		leaf = Leaf.new(index, 512, _meshes.leaf, _heightmap, _heightmap_height, _root_index)
 		leafs.append(leaf)
 		add_child(leaf)
 

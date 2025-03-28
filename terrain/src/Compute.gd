@@ -4,8 +4,8 @@ var shader_data: RDShaderFile = preload("res://terrain/src/shader/hm_fnoise.glsl
 
 var rd: RenderingDevice
 
-func _init() -> void:
-	print(shader_data)
+# func _init() -> void:
+# 	print(shader_data)
 
 func gpu_heightmap(size:= 512, index:= Vector2(0,0)) -> Image:
 

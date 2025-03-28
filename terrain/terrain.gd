@@ -15,7 +15,6 @@ var _height_scale:= 0.05 * 1000.0
 	set(value):
 		set_height = value
 		_height_scale = value * 1000.0
-		update_shader({ height_scale = _height_scale });
 
 @export var set_noise_layer: Array[FastNoiseLite] = [FastNoiseLite.new()]:
 	set(value):
@@ -29,8 +28,9 @@ var _height_scale:= 0.05 * 1000.0
 # @export_tool_button("GPU COMPUTE") var set_gpu_compute = gpu_generate;
 
 func test() -> void:
-	Store.tiles[Vector2i(10,10)].set_shader({LOD_0=5})
-	Store.tiles[Vector2i(10,10)].material_override.set_shader_parameter("LOD_0", 1)
+
+	# Store.tiles[Vector2i(10,10)].set_shader({LOD_0=5})
+	Store.patches[Vector2i(0,0)].material_override.set_shader_parameter("LOD_0", 1)
 	pass
 			
 var camera_position:= Vector3.ZERO
@@ -42,7 +42,6 @@ signal on_camera_move(position: Vector3)
 
 func _ready() -> void:
 	add_child(chunks)
-	generate()
 
 	pass
 
@@ -58,7 +57,7 @@ func _process(_delta: float) -> void:
 
 
 func generate() -> void:
-	print("generate start")
+	# print("generate start")
 	
 	var compute:= Compute.new()
 
@@ -91,7 +90,9 @@ func generate() -> void:
 
 			pass
 
-	timer.end('generated map')
+	Store.print_patches()
+
+	# timer.end('generated map')
 	# hm.normal.save_jpg('res://hm_n.jpg')
 
 	# var hm:= ImageTexture.new()
@@ -185,6 +186,18 @@ func grid_mesh(size: int, subdiv: int) -> Mesh:
 	mesh.custom_aabb.size = Vector3(size, 5000, size)
 
 	return mesh
+
+
+class Patches:
+
+	var patches:= {}
+
+	func _init() -> void:
+		patches = {}
+
+	func set_patch(global_index: Vector2i) -> void:
+		pass
+
 
 
 class PrintTimer:
