@@ -9,9 +9,13 @@ class_name Terrain extends Node3D
 	set(value):
 		if value.x > 0 && value.y > 0:
 			set_chunk = value
-
-@export var set_height:= 50.0:
-	set(value): set_height = value;
+	
+var _height_scale:= 0.05 * 1000.0
+@export_range(0.0, 1.0, 0.01) var set_height:= 0.05:
+	set(value):
+		set_height = value
+		_height_scale = value * 1000.0
+		update_shader({ height_scale = _height_scale });
 
 @export var set_noise_layer: Array[FastNoiseLite] = [FastNoiseLite.new()]:
 	set(value):
@@ -21,7 +25,13 @@ class_name Terrain extends Node3D
 			set_noise_layer = [FastNoiseLite.new()]
 
 @export_tool_button("Generate") var set_generate = generate;
+@export_tool_button("Test") var test_btn = test;
 # @export_tool_button("GPU COMPUTE") var set_gpu_compute = gpu_generate;
+
+func test() -> void:
+	Store.tiles[Vector2i(10,10)].set_shader({LOD_0=5})
+	Store.tiles[Vector2i(10,10)].material_override.set_shader_parameter("LOD_0", 1)
+	pass
 			
 var camera_position:= Vector3.ZERO
 var chunks:= Node3D.new()
@@ -32,9 +42,10 @@ signal on_camera_move(position: Vector3)
 
 func _ready() -> void:
 	add_child(chunks)
-	# generate()
-		
+	generate()
+
 	pass
+
 
 
 func _process(_delta: float) -> void:
@@ -43,6 +54,7 @@ func _process(_delta: float) -> void:
 			camera_position = set_camera.global_position
 			# printraw('\r camera move')
 			on_camera_move.emit(camera_position)
+
 
 
 func generate() -> void:
@@ -67,18 +79,19 @@ func generate() -> void:
 		(set_chunk.y - 1) * -2048 / 2.0
 	)
 
+	timer.start()
+
 	for x in set_chunk.x:
 		for y in set_chunk.y:
 			var index:= Vector2i(x,y)
 			var hm_image:= compute.gpu_heightmap(2049, index)
-			timer.start()
 			var hm:= ImageTexture.create_from_image(hm_image)
-			print(hm_image.get_size())
-			timer.end('generate heightmap 2049')
 
 			create_chunk.call_deferred(index, offset, meshes, hm)
 
 			pass
+
+	timer.end('generated map')
 	# hm.normal.save_jpg('res://hm_n.jpg')
 
 	# var hm:= ImageTexture.new()
@@ -87,10 +100,23 @@ func generate() -> void:
 
 	# add_child(test)
 
+
+func update_shader(params: Dictionary) -> void:
+
+	if !is_node_ready():
+		return
+
+	timer.start()
+
+	for chunk: Chunk in chunks.get_children():
+		chunk.update_shader(params)
+	
+	timer.end("update map height")
+
 	
 func create_chunk(index: Vector2i, offset: Vector2, meshes: Dictionary, heightmap: ImageTexture) -> void:
 
-	var chunk:= Chunk.new(index, meshes, heightmap)
+	var chunk:= Chunk.new(index, meshes, heightmap, _height_scale)
 
 	chunk.position = Vector3(
 			offset.x + (index.x * 2048),

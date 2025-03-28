@@ -10,9 +10,10 @@ var radius: float
 var divided:= false
 
 var is_leaf:= false
+var leafs: Array[Leaf] = []
 var leaf: Leaf
 
-func _init(_index: Vector2i, _meshes: Dictionary, _heightmap: ImageTexture, _size:= 2048, _level:= 0) -> void:
+func _init(_index: Vector2i, _meshes: Dictionary, _heightmap: ImageTexture, _heightmap_height: float, _size:= 2048, _level:= 0) -> void:
 	index = _index
 	level = _level
 	
@@ -25,7 +26,8 @@ func _init(_index: Vector2i, _meshes: Dictionary, _heightmap: ImageTexture, _siz
 	set_shader({
 		level = level,
 		index = index,
-		heightmap = _heightmap
+		heightmap = _heightmap,
+		height_scale = _heightmap_height
 	})
 
 	chunk_mesh = _meshes.chunk[level]
@@ -44,7 +46,7 @@ func _init(_index: Vector2i, _meshes: Dictionary, _heightmap: ImageTexture, _siz
 		for y in 2:
 			for x in 2:
 				var child_index:= Vector2i((index.x * 2) + x, (index.y * 2) + y) if level > 0 else Vector2i(x,y)
-				var child:= Chunk.new(child_index, _meshes, _heightmap, child_size, level + 1)
+				var child:= Chunk.new(child_index, _meshes, _heightmap, _heightmap_height, child_size, level + 1)
 
 				add_child(child)
 
@@ -58,7 +60,8 @@ func _init(_index: Vector2i, _meshes: Dictionary, _heightmap: ImageTexture, _siz
 
 	else:
 		is_leaf = true
-		leaf = Leaf.new(index, 512, _meshes.leaf, _heightmap)
+		leaf = Leaf.new(index, 512, _meshes.leaf, _heightmap, _heightmap_height)
+		leafs.append(leaf)
 		add_child(leaf)
 
 	pass
@@ -68,12 +71,12 @@ func _init(_index: Vector2i, _meshes: Dictionary, _heightmap: ImageTexture, _siz
 
 func check_distance(camera_position: Vector3):
 
-	printraw('\r check distance ' + str(camera_position))
+	# printraw('\r check distance ' + str(camera_position))
 
 	if is_leaf && divided:
 		leaf.check_distance(camera_position)
 
-	var distance:= camera_position.distance_to(global_position) - 384 # max lod in tile
+	var distance:= camera_position.distance_to(global_position) - 448 # max lod in tile
 
 	if distance < radius:
 		# printraw("\r inside")
@@ -116,9 +119,21 @@ func each(callback: Callable):
 		if quad is Chunk:
 			callback.call(quad)
 
+
+func update_collision(_heightmap: ImageTexture, _heightmap_height: int) -> void:
+	pass
+
+
 func set_shader(params: Dictionary) -> void:
 	for k in params:
 		material_override.set_shader_parameter(k, params[k])
+
+
+func update_shader(params: Dictionary) -> void:
+	set_shader(params)
+	for quad in get_children():
+		quad.update_shader(params)
+
 
 
 class Tiles:

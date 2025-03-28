@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://w5grog3nmyvc"]
+
+[ext_resource type="Script" uid="uid://cahiweh6m3oha" path="res://terrain/test.gd" id="1_pd6ku"]
+
+[sub_resource type="HeightMapShape3D" id="HeightMapShape3D_pd6ku"]
+
+[node name="Test" type="Node3D"]
+script = ExtResource("1_pd6ku")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+shape = SubResource("HeightMapShape3D_pd6ku")

@@ -11,7 +11,6 @@ fractal_weighted_strength = 0.32
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_7mqxp"]
 noise_type = 3
 frequency = 0.008
-fractal_octaves = 3
 fractal_weighted_strength = 0.7
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_1npqb"]
@@ -24,8 +23,9 @@ fractal_weighted_strength = 1.0
 [node name="Terrain" type="Node3D" node_paths=PackedStringArray("set_camera")]
 script = ExtResource("1_gaya0")
 set_camera = NodePath("Camera3D")
-set_chunk = Vector2i(3, 3)
+set_chunk = Vector2i(2, 1)
+set_height = 0.25
 set_noise_layer = Array[FastNoiseLite]([SubResource("FastNoiseLite_gaya0"), SubResource("FastNoiseLite_7mqxp"), SubResource("FastNoiseLite_1npqb")])
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -2460.45, 72.9382, -534.972)
+transform = Transform3D(1, -0.000683002, -0.000514678, 0.000739819, 0.388979, 0.921246, -0.000429014, -0.921246, 0.38898, -1765.51, 247.829, -724.847)

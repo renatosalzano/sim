@@ -12,16 +12,24 @@ uniform float max_distance_LOD;
 uniform vec3 global_position;
 uniform vec3 camera_position;
 
+uniform int LOD_0 = 0;
+uniform int LOD_1 = 0;
+uniform int LOD_2 = 0;
+uniform int LOD_3 = 0;
+
 float get_height(vec2 uv) {
 	float value =  texture(heightmap, uv).r * height_scale;
-	value = pow(value, 1.4);
 	return value;
 }
 
 int calc_LOD(vec3 next_tile) {
-	float distance_to = distance(camera_position, next_tile);
+	vec3 a = vec3(camera_position.x, 0.0, camera_position.z);
+	float next_tile_height = get_height(next_tile.xz);
+	vec3 b = vec3(next_tile.x, next_tile_height, next_tile.z);
 
-	if (distance_to >= max_distance_LOD) {
+	float distance_to = distance(camera_position, b);
+
+	if (distance_to > max_distance_LOD) {
 		return min_LOD;
 	}
 
@@ -36,7 +44,11 @@ int calc_LOD(vec3 next_tile) {
 }
 
 bool LOD_is_lower(vec3 next_tile) {
-	float distance_to = distance(camera_position, next_tile);
+	next_tile.y = 0.0;
+	vec3 a = vec3(camera_position.x, 0.0, camera_position.z);
+	float next_tile_height = get_height(next_tile.xz);
+	vec3 b = vec3(next_tile.x, next_tile_height, next_tile.z);
+	float distance_to = distance(camera_position, b);
 
 	if (distance_to >= max_distance_LOD) {
 		return LOD < min_LOD;
@@ -83,16 +95,16 @@ void vertex() {
 		float vertex_step = pixel * pow(2.0, float(LOD));
 
 		float distance_to = distance(camera_position, global_position);
-
-		vec3 tile_top = global_position + vec3(0, 0, -64);
-		vec3 tile_bottom = global_position + vec3(0, 0, 64);
-		vec3 tile_left = global_position + vec3(-64, 0, 0);
-		vec3 tile_right = global_position + vec3(64, 0, 0);
+		float shift = 64.0;
+		vec3 tile_top = global_position + vec3(0, 0, -shift);
+		vec3 tile_bottom = global_position + vec3(0, 0, shift);
+		vec3 tile_left = global_position + vec3(-shift, 0, 0);
+		vec3 tile_right = global_position + vec3(shift, 0, 0);
 
 		// LOD
 		if (VERTEX_ID % 2 != 0) {
 
-			if (calc_LOD(tile_top) > LOD) {
+			if (LOD_0 > LOD) {
 				if (UV2.y == 0.0) {
 					//float h1 = texture(heightmap, vec2(UV.x - vertex_step, UV.y)).r * height_scale;
 					//float h2 = texture(heightmap, vec2(UV.x + vertex_step, UV.y)).r * height_scale;
@@ -100,19 +112,19 @@ void vertex() {
 				}
 			}
 
-			if (calc_LOD(tile_bottom) > LOD) {
+			if (LOD_1 > LOD) {
 				if (UV2.y > 0.99) {
 					VERTEX.y = calc_middle(UV, vec2(vertex_step, 0));
 				}
 			}
 
-			if (calc_LOD(tile_left) > LOD) {
+			if (LOD_2 > LOD) {
 				if (UV2.x == 0.0) {
 					VERTEX.y = calc_middle(UV, vec2(0, vertex_step));
 				}
 			}
 
-			if (calc_LOD(tile_right) > LOD) {
+			if (LOD_3 > LOD) {
 				if (UV2.x > 0.99) {
 					VERTEX.y = calc_middle(UV, vec2(0, vertex_step));
 				}
@@ -130,6 +142,10 @@ void fragment() {
 	if (UV2.x < edge || UV2.y < edge) {
 		//ALBEDO = color;
 		ALBEDO += vec3(0,0.4,0);
+	}
+	
+	if (LOD_0 > 0) {
+		ALBEDO = vec3(0,0.4,0);
 	}
 	// Called for every pixel the material is visible on.
 }

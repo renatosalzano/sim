@@ -57,7 +57,8 @@ func gpu_heightmap(size:= 512, index:= Vector2(0,0)) -> Image:
 
 	var output_bytes:= rd.texture_get_data(hm_rid, 0)
 
-	var output := Image.create_from_data(texture_size, texture_size, false, Image.FORMAT_R8, output_bytes)
+	var output := Image.create_from_data(texture_size, texture_size, false, Image.FORMAT_RH, output_bytes)
+	# output.convert(Image.FORMAT_RH)
 
 	if resize:
 		var rect:= Rect2i(Vector2i(0, 0), Vector2i(size, size))
@@ -70,7 +71,9 @@ func gpu_heightmap(size:= 512, index:= Vector2(0,0)) -> Image:
 func texture_rid(size: int) -> RID:
 
 	var hm_format:= RDTextureFormat.new()
-	hm_format.format = RenderingDevice.DATA_FORMAT_R8_UNORM
+	# hm_format.format = RenderingDevice.DATA_FORMAT_R8_UNORM
+	hm_format.format = RenderingDevice.DATA_FORMAT_R16_SFLOAT
+	# hm_format.format = RenderingDevice.DATA_FORMAT_R32_SFLOAT
 	hm_format.width = size
 	hm_format.height = size
 
