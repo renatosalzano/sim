@@ -43,6 +43,10 @@ signal on_camera_move(position: Vector3)
 func _ready() -> void:
 	add_child(chunks)
 
+	for x in 1:
+		for y in 1:
+			print(set_noise_layer[0].get_noise_2d(float(x), float(y)))
+
 	pass
 
 
@@ -90,16 +94,10 @@ func generate() -> void:
 
 			pass
 
-	Store.print_patches()
+	# Store.print_patches()
 
-	# timer.end('generated map')
-	# hm.normal.save_jpg('res://hm_n.jpg')
-
-	# var hm:= ImageTexture.new()
-
-	# var test = Chunk.new(Vector2(0,0), meshes, hm)
-
-	# add_child(test)
+	timer.end('generated map')
+	pass
 
 
 func update_shader(params: Dictionary) -> void:
@@ -186,18 +184,6 @@ func grid_mesh(size: int, subdiv: int) -> Mesh:
 	mesh.custom_aabb.size = Vector3(size, 5000, size)
 
 	return mesh
-
-
-class Patches:
-
-	var patches:= {}
-
-	func _init() -> void:
-		patches = {}
-
-	func set_patch(global_index: Vector2i) -> void:
-		pass
-
 
 
 class PrintTimer:

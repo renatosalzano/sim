@@ -22,26 +22,6 @@ float get_height(vec2 uv) {
 	return value;
 }
 
-int calc_LOD(vec3 next_tile) {
-	vec3 a = vec3(camera_position.x, 0.0, camera_position.z);
-	float next_tile_height = get_height(next_tile.xz);
-	vec3 b = vec3(next_tile.x, next_tile_height, next_tile.z);
-
-	float distance_to = distance(camera_position, b);
-
-	if (distance_to > max_distance_LOD) {
-		return min_LOD;
-	}
-
-	for (int x = 0; x <= min_LOD; ++x) {
-		if (distance_to < float((x + 1) * 64)) {
-			return x;
-		}
-	}
-
-	return LOD;
-
-}
 
 float calc_middle(vec2 uv, vec2 offset) {
 	float h1 = get_height(vec2(uv.x - offset.x, uv.y - offset.y));
@@ -75,18 +55,12 @@ void vertex() {
 
 		float distance_to = distance(camera_position, global_position);
 		float shift = 64.0;
-		vec3 tile_top = global_position + vec3(0, 0, -shift);
-		vec3 tile_bottom = global_position + vec3(0, 0, shift);
-		vec3 tile_left = global_position + vec3(-shift, 0, 0);
-		vec3 tile_right = global_position + vec3(shift, 0, 0);
 
 		// LOD
 		if (VERTEX_ID % 2 != 0) {
 
 			if (LOD_TOP > LOD) {
 				if (UV2.y == 0.0) {
-					//float h1 = texture(heightmap, vec2(UV.x - vertex_step, UV.y)).r * height_scale;
-					//float h2 = texture(heightmap, vec2(UV.x + vertex_step, UV.y)).r * height_scale;
 					VERTEX.y = calc_middle(UV, vec2(vertex_step, 0));
 				}
 			}
@@ -115,7 +89,7 @@ void vertex() {
 
 void fragment() {
 	ALBEDO = texture(heightmap, UV).rrr;
-	float edge = 0.02;
+	float edge = 0.04;
 
 	if (UV2.x < edge || UV2.y < edge) {
 		//ALBEDO = color;
@@ -124,6 +98,18 @@ void fragment() {
 
 	if (LOD_TOP > LOD && UV2.y < edge) {
 		ALBEDO = vec3(1.,0,0);
+	}
+
+	if (LOD_BOTTOM > LOD && UV2.y > 1.0 - edge) {
+		ALBEDO = vec3(1.,0,1.);
+	}
+
+	if (LOD_LEFT > LOD && UV2.x < edge) {
+		ALBEDO = vec3(0,1,0);
+	}
+
+	if (LOD_RIGHT > LOD && UV2.x > 1.0 - edge) {
+		ALBEDO = vec3(0,0,1.);
 	}
 
 	//if (LOD_0 > 0) {

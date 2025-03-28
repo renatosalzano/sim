@@ -1,17 +1,32 @@
-[gd_scene load_steps=5 format=3 uid="uid://cupct2xf5tegy"]
+[gd_scene load_steps=8 format=3 uid="uid://cupct2xf5tegy"]
 
 [ext_resource type="Script" uid="uid://d38amdgqdv5n6" path="res://terrain/terrain.gd" id="1_gaya0"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_gaya0"]
-frequency = 0.0034
-fractal_octaves = 3
-fractal_gain = 0.54
-fractal_weighted_strength = 0.32
+noise_type = 2
+frequency = 0.0047
+fractal_type = 0
+fractal_octaves = 1
+fractal_gain = 0.635
+fractal_weighted_strength = 0.66
+cellular_distance_function = 1
+domain_warp_enabled = true
+domain_warp_type = 2
+domain_warp_amplitude = 50.0
+domain_warp_frequency = 0.004
+domain_warp_fractal_octaves = 2
+domain_warp_fractal_gain = 0.48
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_7mqxp"]
-noise_type = 3
-frequency = 0.008
+noise_type = 2
+seed = 2
+frequency = 0.0036
 fractal_weighted_strength = 0.7
+domain_warp_enabled = true
+domain_warp_type = 2
+domain_warp_amplitude = 29.0
+domain_warp_fractal_octaves = 3
+domain_warp_fractal_gain = 0.825
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_1npqb"]
 frequency = 0.0006
@@ -20,12 +35,39 @@ fractal_lacunarity = 3.6
 fractal_gain = 0.485
 fractal_weighted_strength = 1.0
 
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_gaya0"]
+sky_top_color = Color(7.70092e-07, 0.591971, 0.890384, 1)
+
+[sub_resource type="Sky" id="Sky_1npqb"]
+sky_material = SubResource("ProceduralSkyMaterial_gaya0")
+
+[sub_resource type="Environment" id="Environment_gaya0"]
+background_mode = 2
+sky = SubResource("Sky_1npqb")
+ambient_light_source = 3
+fog_enabled = true
+fog_mode = 1
+fog_density = 0.09
+fog_height = -291.27
+fog_depth_curve = 2.07053
+fog_depth_begin = 830.3
+fog_depth_end = 2490.0
+
 [node name="Terrain" type="Node3D" node_paths=PackedStringArray("set_camera")]
 script = ExtResource("1_gaya0")
 set_camera = NodePath("Camera3D")
-set_chunk = Vector2i(2, 1)
-set_height = 0.25
+set_chunk = Vector2i(4, 4)
+set_height = 0.8
 set_noise_layer = Array[FastNoiseLite]([SubResource("FastNoiseLite_gaya0"), SubResource("FastNoiseLite_7mqxp"), SubResource("FastNoiseLite_1npqb")])
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, -0.000683002, -0.000514678, 0.000739819, 0.388979, 0.921246, -0.000429014, -0.921246, 0.388979, -1504.68, 247.829, -404.59)
+transform = Transform3D(0.868424, 0, 0.495822, 0, 1, 0, -0.495822, 0, 0.868424, -1462.19, 71.7431, -626.809)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_gaya0")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldEnvironment"]
+transform = Transform3D(-0.617518, 0.106628, -0.779296, -0.287884, 0.891382, 0.350086, 0.731979, 0.440532, -0.519748, -2.15134, 1164.43, 0)
+light_energy = 5.06
+shadow_enabled = true
+sky_mode = 2
