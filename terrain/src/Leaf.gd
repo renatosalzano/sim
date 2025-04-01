@@ -22,13 +22,7 @@ func _init(i: Vector2i, size: int, meshes: Array, _heightmap: ImageTexture, _hei
 
 	collision.shape = heightmap_shape
 
-	var tile_size:= 64
-	# var tile_count:= size / tile_size
-
-	var offset:= Vector2(
-			7 * -32.0,
-			7 * -32.0
-		)
+	
 
 	lods.resize(meshes.size())
 
@@ -39,12 +33,35 @@ func _init(i: Vector2i, size: int, meshes: Array, _heightmap: ImageTexture, _hei
 
 	# max_distance_LOD = 448
 
-	add_child(patches)
-	add_child(collision)
+	add_child.call_deferred(patches)
+	add_child.call_deferred(collision)
 
 	var _global_offset:= _root_index * 32
 
+	WorkerThreadPool.add_task(init_patch.bind(_global_offset, _heightmap, _heightmap_height, meshes))
+
 	# print("GLOBAL OFFSET ", _global_offset)
+
+	
+
+	# update_collision(_heightmap_height)
+
+
+func init_patch(
+	_global_offset: Vector2i,
+	_heightmap: ImageTexture,
+	_heightmap_height: float,
+	meshes: Array[Mesh]
+) -> void:
+
+	var tile_size:= 64
+	# var tile_count:= size / tile_size
+
+	var offset:= Vector2(
+			7 * -32.0,
+			7 * -32.0
+		)
+
 
 	for x in 8:
 		for y in 8:
@@ -58,12 +75,10 @@ func _init(i: Vector2i, size: int, meshes: Array, _heightmap: ImageTexture, _hei
 			var patch = Patch.new(_index, patch_index, global_index, meshes, shader, _heightmap, _heightmap_height)
 
 			patch.calc_height(heightmap_region, _heightmap_height)
-			patch.set_shader({ max_distance_LOD=lods[-1] })
-			patch.translate(reposition)
+			patch.set_shader.call_deferred({ max_distance_LOD=lods[-1] })
+			patch.position = reposition
 
-			patches.add_child(patch)
-
-	update_collision(_heightmap_height)
+			patches.add_child.call_deferred(patch)
 
 
 func update_collision(_heightmap_height: float, _heightmap: ImageTexture = null) -> void:
@@ -73,11 +88,7 @@ func update_collision(_heightmap_height: float, _heightmap: ImageTexture = null)
 
 		collision.shape.update_map_data_from_image.call_deferred(image, 0.0, _heightmap_height)
 
-	var start_task:= func():
-		# printraw('\r task started')
-		WorkerThreadPool.add_task(update_fn)
-
-	utils.debounce(start_task, 2000)
+	# WorkerThreadPool.add_task(update_fn)
 	pass
 
 
@@ -151,6 +162,8 @@ func set_shader(dict: Dictionary):
 func get_region(_heightmap: ImageTexture) -> Image:
 	
 	var src:= _heightmap.get_image()
+	src.convert(Image.FORMAT_RH)
+
 	var pos:= index * leaf_size
 	var region_size:= Vector2(leaf_size + 1, leaf_size + 1)
 	var region:= src.get_region(Rect2i(pos, region_size))

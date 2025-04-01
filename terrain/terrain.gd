@@ -41,12 +41,11 @@ var timer:= PrintTimer.new()
 signal on_camera_move(position: Vector3)
 
 func _ready() -> void:
+
 	add_child(chunks)
 
-	for x in 1:
-		for y in 1:
-			print(set_noise_layer[0].get_noise_2d(float(x), float(y)))
-
+	compute = Compute.new()
+	# compute.end.connect(compute_end)
 	pass
 
 
@@ -60,10 +59,9 @@ func _process(_delta: float) -> void:
 
 
 
+var compute: Compute
 func generate() -> void:
 	# print("generate start")
-	
-	var compute:= Compute.new()
 
 	remove_child(chunks)
 	chunks.queue_free()
@@ -73,31 +71,54 @@ func generate() -> void:
 	add_child(chunks)
 
 	var meshes:= {
-		chunk = generate_chunk_mesh(),
-		leaf = generate_leaf_mesh()
+		chunk = Generate.chunk_mesh(),
+		leaf = Generate.leaf_mesh()
 	}
 
 	var offset:= Vector2(
 		(set_chunk.x - 1) * -2048 / 2.0,
 		(set_chunk.y - 1) * -2048 / 2.0
 	)
-
-	timer.start()
+	
 
 	for x in set_chunk.x:
 		for y in set_chunk.y:
-			var index:= Vector2i(x,y)
-			var hm_image:= compute.gpu_heightmap(2049, index)
-			var hm:= ImageTexture.create_from_image(hm_image)
+			var index:= Vector2i(x, y)
+			
+			# var end:= func(image: Image) -> void:
+			# 	print("END COMPUTE ", index)
+			# 	print(image)
 
-			create_chunk.call_deferred(index, offset, meshes, hm)
+			compute.gpu_heightmap(2049, index)
+
+			# var hm_image:= compute.gpu_heightmap(2049, index)
+			# var hm_image:= Image.create_empty(16,16,false, Image.FORMAT_RGBAF)
+			# var hm:= ImageTexture.create_from_image(hm_image)
+			# timer.end('compute texture')
+
+			# create_chunk.call_deferred(index, offset, meshes, hm)
+			# WorkerThreadPool.add_task(create_chunk.bind(index, offset, meshes, hm))
 
 			pass
 
 	# Store.print_patches()
-
-	timer.end('generated map')
+	
 	pass
+
+func create_chunk(index: Vector2i, offset: Vector2, meshes: Dictionary, heightmap: ImageTexture) -> void:
+
+	var time = Time.get_ticks_msec()
+	var chunk:= Chunk.new(index, meshes, heightmap, _height_scale)
+
+	chunk.position = Vector3(
+			offset.x + (index.x * 2048),
+			0,
+			offset.y + (index.y * 2048)
+		)
+
+	chunks.add_child.call_deferred(chunk)
+	# on_camera_move.connect(chunk.check_distance)
+	print('end in ', Time.get_ticks_msec() - time)
 
 
 func update_shader(params: Dictionary) -> void:
@@ -113,77 +134,11 @@ func update_shader(params: Dictionary) -> void:
 	timer.end("update map height")
 
 	
-func create_chunk(index: Vector2i, offset: Vector2, meshes: Dictionary, heightmap: ImageTexture) -> void:
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		if compute is Compute:
+			compute.queue_free()
 
-	var chunk:= Chunk.new(index, meshes, heightmap, _height_scale)
-
-	chunk.position = Vector3(
-			offset.x + (index.x * 2048),
-			0,
-			offset.y + (index.y * 2048)
-		)
-
-	chunks.add_child(chunk)
-	on_camera_move.connect(chunk.check_distance)
-
-
-func generate_chunk_mesh(size:= 2048, min_size:= 512, output:= []) -> Array:
-
-	var subdiv:= (size / 64) - 1
-
-	var mesh:= grid_mesh(size, subdiv)
-
-	output.append(mesh)
-
-	size /= 2
-	if size > min_size - 1:
-		generate_chunk_mesh(size, min_size, output)
-
-	return output
-	
-
-func generate_leaf_mesh(size:= 64) -> Array:
-
-	var subdivisions: Array[int] = []
-	var subdiv: int = size
-
-	var i: int = 0
-
-	while subdiv > 1:
-		subdiv /= 1 if i == 0 else 2
-		if subdiv - 1 >= 0:
-			subdivisions.append(subdiv - 1)
-		else:
-			break
-		
-		i += 1
-
-	# print(subdivisions)
-
-	var lod_meshes = []
-	lod_meshes.resize(subdivisions.size())
-
-	for lod_index in lod_meshes.size():
-
-		var mesh:= grid_mesh(size, subdivisions[lod_index])
-
-		lod_meshes[lod_index] = mesh
-
-	return lod_meshes
-
-
-func grid_mesh(size: int, subdiv: int) -> Mesh:
-
-	var mesh:= PlaneMesh.new()
-	mesh.subdivide_width = subdiv
-	mesh.subdivide_depth = subdiv
-	mesh.size = Vector2(size, size)
-	mesh.add_uv2 = true
-
-	mesh.custom_aabb.position = Vector3(-size / 2, -1500, -size / 2)
-	mesh.custom_aabb.size = Vector3(size, 5000, size)
-
-	return mesh
 
 
 class PrintTimer:

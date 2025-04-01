@@ -33,15 +33,6 @@ func _init(
 	meshes = _meshes
 	min_lod = _meshes.size() - 1
 
-	# print(global_index)
-
-
-	# print(global_index)
-
-	# var size:= 64
-
-	
-
 	for idx: int in 4:
 		neightbors[idx] += global_i
 
@@ -50,14 +41,16 @@ func _init(
 	material_override = material
 	material_override.shader = _shader
 
-	material_override.set_shader_parameter("heightmap", _heightmap)
-	material_override.set_shader_parameter("height_scale", _heightmap_height)
-	material_override.set_shader_parameter("level", level)
-	material_override.set_shader_parameter("index", tile_index)
-	material_override.set_shader_parameter("is_tile", true)
-	material_override.set_shader_parameter("min_LOD", min_lod)
+	set_shader.call_deferred({
+		index= tile_index,
+		level= level,
+		is_tile= true,
+		min_LOD= min_lod,
+		heightmap= _heightmap,
+		height_scale= _heightmap_height,
+	})
 
-	Store.patches[global_i] = self
+	# Store.patches[global_i] = self
 
 	pass
 

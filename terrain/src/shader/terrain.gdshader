@@ -91,9 +91,11 @@ void fragment() {
 	ALBEDO = texture(heightmap, UV).rrr;
 	float edge = 0.04;
 
+	NORMAL_MAP = texture(heightmap, UV).gba;
+
 	if (UV2.x < edge || UV2.y < edge) {
 		//ALBEDO = color;
-		ALBEDO += vec3(0,0.4,0);
+		ALBEDO += vec3(1.,0,0);
 	}
 
 	if (LOD_TOP > LOD && UV2.y < edge) {

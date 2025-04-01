@@ -34,7 +34,7 @@ func _init(
 	material_override = ShaderMaterial.new()
 	material_override.shader = shader
 
-	set_shader({
+	set_shader.call_deferred({
 		level = level,
 		index = index,
 		heightmap = _heightmap,
@@ -45,7 +45,7 @@ func _init(
 
 	mesh = chunk_mesh if level == 0 else null
 	
-	if _size > 512:
+	if _size > 128:
 
 		var child_size: int = _size / 2
 		var offset:= child_size / 2
@@ -59,21 +59,20 @@ func _init(
 				var child_index:= Vector2i((index.x * 2) + x, (index.y * 2) + y) if level > 0 else Vector2i(x,y)
 				var child:= Chunk.new(child_index, _meshes, _heightmap, _heightmap_height, child_size, level + 1, _root_index)
 
-				add_child(child)
+				add_child.call_deferred(child)
 
-				child.translate(Vector3(
+				child.position = Vector3(
 					(x * child_size) - offset,
 					0,
 					(y * child_size) - offset
-				))
-
-				
+				)
 
 	else:
 		is_leaf = true
 		leaf = Leaf.new(index, 512, _meshes.leaf, _heightmap, _heightmap_height, _root_index)
-		leafs.append(leaf)
-		add_child(leaf)
+		# leafs.append(leaf)
+		# add_child.call_deferred(leaf)
+
 
 	pass
 
@@ -84,10 +83,12 @@ func check_distance(camera_position: Vector3):
 
 	# printraw('\r check distance ' + str(camera_position))
 
-	if is_leaf && divided:
-		leaf.check_distance(camera_position)
+	# if is_leaf && divided:
+	# 	leaf.check_distance(camera_position)
+	
+	# var point:= Vector3(camera_position.x, 0, camera_position.z)
 
-	var distance:= camera_position.distance_to(global_position) - 448 # max lod in tile
+	var distance:= camera_position.distance_to(global_position) - radius # max lod in tile
 
 	if distance < radius:
 		# printraw("\r inside")
@@ -104,14 +105,15 @@ func check_distance(camera_position: Vector3):
 
 
 func subdivide():
-	# if leaf: return
-	# mesh = null
-	# each(func(q): q.mesh = q._mesh)
-	mesh = null
 	if is_leaf:
-		leaf.enable()
-	else:
-		each(func(q): q.mesh = q.chunk_mesh)
+		return
+	mesh = null
+	each(func(q): q.mesh = q.chunk_mesh)
+	# mesh = null
+	# if is_leaf:
+	# 	leaf.enable()
+	# else:
+	# 	each(func(q): q.mesh = q.chunk_mesh)
 
 
 func combine(_level: int):
