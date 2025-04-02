@@ -47,12 +47,13 @@ func init_rendering_device(_texture_size: int) -> void:
 	pipeline = rd.compute_pipeline_create(shader_rid)
 
 
-func gpu_heightmap(_texture_size: int, index: Vector2i) -> void:
+func gpu_heightmap(_texture_size: int, index: Vector2i) -> Image:
 
 	if rd == null:
 		# viene inizializzato RenderingDevice
 		init_rendering_device(_texture_size)
 
+	# timer.start()
 	var hm_uniform:= image_uniform(hm_rid)
 
 	var data:= PackedFloat32Array([index.x, index.y, output_size])
@@ -73,16 +74,13 @@ func gpu_heightmap(_texture_size: int, index: Vector2i) -> void:
 	rd.compute_list_dispatch(compute_list, groups.x, groups.y, 1)
 	rd.compute_list_end()
 
-	timer.start()
+	# timer.start()
 	rd.submit()
 	rd.sync()
-	timer.end("GPU SYNC")
-
-	print(buffer_rid)
-	print(uniform_set)
+	# timer.end("GPU SYNC")
 
 	var texture_data:= rd.texture_get_data(hm_rid, 0)
-	timer.end("TEXTURE DATA")
+	# timer.end("TEXTURE DATA")
 
 	var output:= Image.create_from_data(texture_size, texture_size, false, Image.FORMAT_RGBAH, texture_data)
 
@@ -93,8 +91,10 @@ func gpu_heightmap(_texture_size: int, index: Vector2i) -> void:
 		var rect:= Rect2i(Vector2i(0, 0), Vector2i(output_size, output_size))
 		output = output.get_region(rect)
 
-	print("OUTPUT", output)
-	print(" ")
+	# print("OUTPUT", output)
+	# print(" ")
+	# timer.end("generated")
+	return output
 
 
 

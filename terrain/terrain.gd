@@ -58,17 +58,20 @@ func _process(_delta: float) -> void:
 			on_camera_move.emit(camera_position)
 
 
-
+var idx:= Vector2i(0,0)
 var compute: Compute
+
+
 func generate() -> void:
 	# print("generate start")
+
+	var tasks:= ProcessTask.new(self)
+	idx = Vector2i(0,0)
 
 	remove_child(chunks)
 	chunks.queue_free()
 
 	chunks = Node3D.new()
-
-	add_child(chunks)
 
 	var meshes:= {
 		chunk = Generate.chunk_mesh(),
@@ -79,31 +82,35 @@ func generate() -> void:
 		(set_chunk.x - 1) * -2048 / 2.0,
 		(set_chunk.y - 1) * -2048 / 2.0
 	)
+
+	var task:= func(_i: int) -> void:
+
+		if idx.y == set_chunk.y:
+			idx.y  = 0
+			idx.x += 1
+		
+		# print(index)
+		var hm_image:= compute.gpu_heightmap(2049, idx)
+		var heightmap:= ImageTexture.create_from_image(hm_image)
+		# create_chunk(idx, offset, meshes, heightmap)
+		create_chunk(idx, offset, meshes, heightmap)
+
+		idx.y += 1
+
 	
+	tasks.set_task(set_chunk.x * set_chunk.y, task)
 
-	for x in set_chunk.x:
-		for y in set_chunk.y:
-			var index:= Vector2i(x, y)
-			
-			# var end:= func(image: Image) -> void:
-			# 	print("END COMPUTE ", index)
-			# 	print(image)
+	tasks.end.connect(func():
+		remove_child(tasks)
+		tasks.queue_free()
 
-			compute.gpu_heightmap(2049, index)
+		add_child(chunks)
+	)
 
-			# var hm_image:= compute.gpu_heightmap(2049, index)
-			# var hm_image:= Image.create_empty(16,16,false, Image.FORMAT_RGBAF)
-			# var hm:= ImageTexture.create_from_image(hm_image)
-			# timer.end('compute texture')
-
-			# create_chunk.call_deferred(index, offset, meshes, hm)
-			# WorkerThreadPool.add_task(create_chunk.bind(index, offset, meshes, hm))
-
-			pass
-
-	# Store.print_patches()
+	tasks.start()
 	
 	pass
+
 
 func create_chunk(index: Vector2i, offset: Vector2, meshes: Dictionary, heightmap: ImageTexture) -> void:
 
@@ -116,7 +123,7 @@ func create_chunk(index: Vector2i, offset: Vector2, meshes: Dictionary, heightma
 			offset.y + (index.y * 2048)
 		)
 
-	chunks.add_child.call_deferred(chunk)
+	chunks.add_child(chunk)
 	# on_camera_move.connect(chunk.check_distance)
 	print('end in ', Time.get_ticks_msec() - time)
 
@@ -139,6 +146,50 @@ func _notification(what: int) -> void:
 		if compute is Compute:
 			compute.queue_free()
 
+
+class ProcessTask extends Node:
+
+	var node: Node
+	var current_task:= 0;
+	var grid_size:= Vector2i(1,0)
+	var index:= Vector2i(0, 0)
+
+	var callback: Callable
+
+	signal end
+
+	var last_time:= ms()
+	var tickrate:= 1000 / 10
+
+	func ms() -> int:
+		return Time.get_ticks_msec()
+
+
+	func _init(_node: Node) -> void:
+		node = _node
+
+
+	func start() -> void:
+		last_time = ms()
+		node.add_child(self)
+
+
+	func set_task(tasks_count: int, _callback: Callable) -> void:
+		current_task = tasks_count
+		callback = _callback
+
+
+	func _process(_delta: float) -> void:
+
+		if current_task == 0:
+			end.emit()
+			return
+
+		if ms() - last_time > tickrate:
+			last_time = ms()
+			callback.call_deferred(current_task)
+			current_task -= 1
+		
 
 
 class PrintTimer:
