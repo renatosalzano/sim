@@ -24,14 +24,7 @@ var _height_scale:= 0.05 * 1000.0
 			set_noise_layer = [FastNoiseLite.new()]
 
 @export_tool_button("Generate") var set_generate = generate;
-@export_tool_button("Test") var test_btn = test;
 # @export_tool_button("GPU COMPUTE") var set_gpu_compute = gpu_generate;
-
-func test() -> void:
-
-	# Store.tiles[Vector2i(10,10)].set_shader({LOD_0=5})
-	Store.patches[Vector2i(0,0)].material_override.set_shader_parameter("LOD_0", 1)
-	pass
 			
 var camera_position:= Vector3.ZERO
 var chunks:= Node3D.new()
@@ -63,68 +56,60 @@ var compute: Compute
 
 
 func generate() -> void:
-	# print("generate start")
+	# print("generate start"
 
-	var tasks:= ProcessTask.new(self)
-	idx = Vector2i(0,0)
-
+	# clean up
 	remove_child(chunks)
 	chunks.queue_free()
-
 	chunks = Node3D.new()
 
+	# var meshes:= Generate.chunk_mesh(TerrainContext.chunk_max_size, TerrainContext.chunk_min_size)
 	var meshes:= {
-		chunk = Generate.chunk_mesh(),
-		leaf = Generate.leaf_mesh()
+		chunk = Generate.chunk_mesh(TerrainContext.chunk_max_size, TerrainContext.chunk_min_size),
+		leaf = Generate.leaf_mesh(TerrainContext.chunk_min_size),
+		LOD_distance = []
 	}
+
+	
+	meshes.LOD_distance.resize(meshes.leaf.size())
+	for i: int in meshes.leaf.size():
+		meshes.LOD_distance[i] = TerrainContext.chunk_min_size * (i + 1)
+
+
+	print(meshes.LOD_distance)
 
 	var offset:= Vector2(
 		(set_chunk.x - 1) * -2048 / 2.0,
 		(set_chunk.y - 1) * -2048 / 2.0
 	)
 
-	var task:= func(_i: int) -> void:
+	for x: int in set_chunk.x:
+		for y: int in set_chunk.y:
+			var index:= Vector2i(x, y)
+			var heightmap:= compute.gpu_heightmap(2049, index)
+			# create_chunk(idx, offset, meshes, heightmap)
+			create_chunk(index, offset, meshes, heightmap)
 
-		if idx.y == set_chunk.y:
-			idx.y  = 0
-			idx.x += 1
-		
-		# print(index)
-		var hm_image:= compute.gpu_heightmap(2049, idx)
-		var heightmap:= ImageTexture.create_from_image(hm_image)
-		# create_chunk(idx, offset, meshes, heightmap)
-		create_chunk(idx, offset, meshes, heightmap)
-
-		idx.y += 1
-
-	
-	tasks.set_task(set_chunk.x * set_chunk.y, task)
-
-	tasks.end.connect(func():
-		remove_child(tasks)
-		tasks.queue_free()
-
-		add_child(chunks)
-	)
-
-	tasks.start()
-	
+	add_child(chunks)
 	pass
 
 
-func create_chunk(index: Vector2i, offset: Vector2, meshes: Dictionary, heightmap: ImageTexture) -> void:
+func create_chunk(index: Vector2i, offset: Vector2, meshes: Dictionary, heightmap: Image) -> void:
 
 	var time = Time.get_ticks_msec()
-	var chunk:= Chunk.new(index, meshes, heightmap, _height_scale)
+	
+	var heightmap_texture:= ImageTexture.create_from_image(heightmap)
+	var chunk:= Chunk.new(index, meshes, heightmap, heightmap_texture, _height_scale, TerrainContext.chunk_max_size)
 
 	chunk.position = Vector3(
-			offset.x + (index.x * 2048),
+			offset.x + (index.x * TerrainContext.chunk_max_size),
 			0,
-			offset.y + (index.y * 2048)
+			offset.y + (index.y * TerrainContext.chunk_max_size)
 		)
 
+
 	chunks.add_child(chunk)
-	# on_camera_move.connect(chunk.check_distance)
+	on_camera_move.connect(chunk.check_distance)
 	print('end in ', Time.get_ticks_msec() - time)
 
 
@@ -145,6 +130,7 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		if compute is Compute:
 			compute.queue_free()
+			TerrainContext.chunks.clear()
 
 
 class ProcessTask extends Node:

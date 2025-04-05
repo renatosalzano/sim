@@ -84,15 +84,15 @@ func set_lod(lod: int, camera_position:= Vector3.ZERO) -> void:
 		# 0: bottom 1: top 2: right 3: left
 		var neightbor:= neightbors[i]
 
-		if Store.has_patch(neightbor):
-			# Store.tiles[neightbor].neightbors_lod[p[i]] = lod
-			match i:
-				0: Store.patches[neightbor].set_shader({LOD_BOTTOM = lod})
-				1: Store.patches[neightbor].set_shader({LOD_TOP = lod})
-				2: Store.patches[neightbor].set_shader({LOD_RIGHT = lod})
-				3: Store.patches[neightbor].set_shader({LOD_LEFT = lod})
-			# Store.tiles[neightbor].material_override.set_shader_parameter(key, lod)
-			# Store.tiles[neightbor].set_shader({[key]})
+		# if Store.has_patch(neightbor):
+		# 	# Store.tiles[neightbor].neightbors_lod[p[i]] = lod
+		# 	match i:
+		# 		0: Store.patches[neightbor].set_shader({LOD_BOTTOM = lod})
+		# 		1: Store.patches[neightbor].set_shader({LOD_TOP = lod})
+		# 		2: Store.patches[neightbor].set_shader({LOD_RIGHT = lod})
+		# 		3: Store.patches[neightbor].set_shader({LOD_LEFT = lod})
+		# 	# Store.tiles[neightbor].material_override.set_shader_parameter(key, lod)
+		# 	# Store.tiles[neightbor].set_shader({[key]})
 
 		
 	if lod == -1:

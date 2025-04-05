@@ -49,42 +49,37 @@ void vertex() {
 
 	VERTEX.y = get_height(UV);
 
-	if (is_tile) {
+	float vertex_step = pixel * pow(2.0, float(LOD));
 
-		float vertex_step = pixel * pow(2.0, float(LOD));
+	// LOD
+	if (VERTEX_ID % 2 != 0) {
 
-		float distance_to = distance(camera_position, global_position);
-		float shift = 64.0;
-
-		// LOD
-		if (VERTEX_ID % 2 != 0) {
-
-			if (LOD_TOP > LOD) {
-				if (UV2.y == 0.0) {
-					VERTEX.y = calc_middle(UV, vec2(vertex_step, 0));
-				}
+		if (LOD_TOP > LOD) {
+			if (UV2.y == 0.0) {
+				VERTEX.y = calc_middle(UV, vec2(vertex_step, 0));
 			}
-
-			if (LOD_BOTTOM > LOD) {
-				if (UV2.y > 0.99) {
-					VERTEX.y = calc_middle(UV, vec2(vertex_step, 0));
-				}
-			}
-
-			if (LOD_LEFT > LOD) {
-				if (UV2.x == 0.0) {
-					VERTEX.y = calc_middle(UV, vec2(0, vertex_step));
-				}
-			}
-
-			if (LOD_RIGHT > LOD) {
-				if (UV2.x > 0.99) {
-					VERTEX.y = calc_middle(UV, vec2(0, vertex_step));
-				}
-			}
-
 		}
+
+		if (LOD_BOTTOM > LOD) {
+			if (UV2.y > 0.99) {
+				VERTEX.y = calc_middle(UV, vec2(vertex_step, 0));
+			}
+		}
+
+		if (LOD_LEFT > LOD) {
+			if (UV2.x == 0.0) {
+				VERTEX.y = calc_middle(UV, vec2(0, vertex_step));
+			}
+		}
+
+		if (LOD_RIGHT > LOD) {
+			if (UV2.x > 0.99) {
+				VERTEX.y = calc_middle(UV, vec2(0, vertex_step));
+			}
+		}
+
 	}
+	
 }
 
 void fragment() {

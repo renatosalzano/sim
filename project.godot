@@ -16,8 +16,12 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-Store="*res://terrain/src/Store.gd"
+TerrainContext="*res://terrain/src/TerrainContext.gd"
 
 [debug]
 
 gdscript/warnings/integer_division=0
+
+[editor]
+
+run/main_run_args="--verbose"

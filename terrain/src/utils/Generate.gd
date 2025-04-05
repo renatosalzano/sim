@@ -1,13 +1,11 @@
 class_name Generate
 
-
-static func chunk_mesh(size:= 2048, min_size:= 128, output:= [], level:= 0) -> Array:
+static func chunk_mesh(size:= 2048, min_size:= 128, output:= []) -> Array:
 
 	# TODO CHUNK LOD
 	# print(level," ", size)
-	var factor:= 64 / int(pow(2, level))
 
-	var subdiv:= (size / factor) - 1
+	var subdiv:= (size / 64) - 1
 
 	var mesh:= grid_mesh(size, subdiv)
 
@@ -15,7 +13,7 @@ static func chunk_mesh(size:= 2048, min_size:= 128, output:= [], level:= 0) -> A
 
 	size /= 2
 	if size >= min_size:
-		chunk_mesh(size, min_size, output, level + 1)
+		chunk_mesh(size, min_size, output)
 
 	return output
 
@@ -34,6 +32,7 @@ static func grid_mesh(size: int, subdiv: int) -> Mesh:
 	return mesh
 
 
+
 static func leaf_mesh(size:= 64) -> Array:
 
 	var subdivisions: Array[int] = []
@@ -43,7 +42,7 @@ static func leaf_mesh(size:= 64) -> Array:
 
 	while subdiv > 1:
 		subdiv /= 1 if i == 0 else 2
-		if subdiv - 1 >= 0:
+		if subdiv - 1 > 0:
 			subdivisions.append(subdiv - 1)
 		else:
 			break

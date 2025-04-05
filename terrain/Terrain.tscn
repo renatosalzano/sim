@@ -39,12 +39,12 @@ size = Vector2(20000, 20000)
 [node name="Terrain" type="Node3D" node_paths=PackedStringArray("set_camera")]
 script = ExtResource("1_gaya0")
 set_camera = NodePath("Camera3D")
+set_chunk = Vector2i(2, 1)
 set_height = 0.8
 set_noise_layer = Array[FastNoiseLite]([SubResource("FastNoiseLite_gaya0"), SubResource("FastNoiseLite_7mqxp"), SubResource("FastNoiseLite_1npqb")])
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(-0.771625, 0.135504, -0.621477, 0, 0.977046, 0.21303, 0.636078, 0.164379, -0.753912, -664.347, 143.423, 3718.57)
-fov = 120.0
+transform = Transform3D(-0.135855, 0.130271, 0.982127, 0.0485471, 0.991002, -0.124733, -0.989539, 0.0307337, -0.140957, 9.30829, 634.658, 261.862)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.68738, 31.8033, 0)

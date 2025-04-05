@@ -14,15 +14,13 @@ var lods: Array[int] = []
 var leaf_size: int
 var utils:= Utils.new(self)
 
-func _init(i: Vector2i, size: int, meshes: Array, _heightmap: ImageTexture, _heightmap_height: float, _root_index: Vector2i) -> void:
+func _init(i: Vector2i, size: int, meshes: Array, _heightmap: Image, _heightmap_texture: ImageTexture, _heightmap_height: float, _root_index: Vector2i) -> void:
 
 	index = i
 	leaf_size = size
 	heightmap_region = get_region(_heightmap)
 
 	collision.shape = heightmap_shape
-
-	
 
 	lods.resize(meshes.size())
 
@@ -38,7 +36,7 @@ func _init(i: Vector2i, size: int, meshes: Array, _heightmap: ImageTexture, _hei
 
 	var _global_offset:= _root_index * 32
 
-	WorkerThreadPool.add_task(init_patch.bind(_global_offset, _heightmap, _heightmap_height, meshes))
+	# WorkerThreadPool.add_task(init_patch.bind(_global_offset, _heightmap, _heightmap_height, meshes))
 
 	# print("GLOBAL OFFSET ", _global_offset)
 
@@ -83,10 +81,10 @@ func init_patch(
 
 func update_collision(_heightmap_height: float, _heightmap: ImageTexture = null) -> void:
 
-	var update_fn:= func():
-		var image:= heightmap_region if _heightmap == null else get_region(_heightmap)
+	# var update_fn:= func():
+	# 	var image:= heightmap_region if _heightmap == null else get_region(_heightmap)
 
-		collision.shape.update_map_data_from_image.call_deferred(image, 0.0, _heightmap_height)
+	# 	collision.shape.update_map_data_from_image.call_deferred(image, 0.0, _heightmap_height)
 
 	# WorkerThreadPool.add_task(update_fn)
 	pass
@@ -159,13 +157,10 @@ func set_shader(dict: Dictionary):
 	each(func(tile: Patch): tile.set_shader(dict))
 
 
-func get_region(_heightmap: ImageTexture) -> Image:
-	
-	var src:= _heightmap.get_image()
-	src.convert(Image.FORMAT_RH)
+func get_region(_heightmap: Image) -> Image:
 
 	var pos:= index * leaf_size
 	var region_size:= Vector2(leaf_size + 1, leaf_size + 1)
-	var region:= src.get_region(Rect2i(pos, region_size))
+	var region:= _heightmap.get_region(Rect2i(pos, region_size))
 
 	return region
