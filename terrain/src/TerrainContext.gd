@@ -4,11 +4,15 @@ extends Node
 var chunk_max_size:= 2048
 var chunk_min_size:= 128
 
-var chunks:= []
+var chunks:= {}
 
-func has_chunk(level: int, global_index: Vector2i) -> bool:
-	return chunks[level].has(global_index)
+signal changed
 
-func get_chunk(level: int, global_index: Vector2i) -> Chunk:
-	return chunks[level][global_index]
+func has_chunk(global_index: Vector2i) -> bool:
+	return chunks.has(global_index)
 
+func get_chunk(global_index: Vector2i) -> Chunk:
+	return chunks[global_index]
+
+func emit_changed() -> void:
+	changed.emit()

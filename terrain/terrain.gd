@@ -42,10 +42,15 @@ func _ready() -> void:
 	pass
 
 
+var last_time:= ms()
+var tickrate:= 1000 / 15
 
 func _process(_delta: float) -> void:
 	if set_camera:
-		if camera_position != set_camera.global_position:
+		var can_update:= ms() - last_time > tickrate
+		if camera_position != set_camera.global_position && can_update:
+			last_time = ms()
+			# print('can update')
 			camera_position = set_camera.global_position
 			# printraw('\r camera move')
 			on_camera_move.emit(camera_position)
@@ -77,6 +82,7 @@ func generate() -> void:
 
 
 	print(meshes.LOD_distance)
+	print(meshes.leaf.size())
 
 	var offset:= Vector2(
 		(set_chunk.x - 1) * -2048 / 2.0,
@@ -90,7 +96,10 @@ func generate() -> void:
 			# create_chunk(idx, offset, meshes, heightmap)
 			create_chunk(index, offset, meshes, heightmap)
 
+	# add chunks to scene
 	add_child(chunks)
+	TerrainContext.emit_changed()
+	
 	pass
 
 
@@ -107,9 +116,9 @@ func create_chunk(index: Vector2i, offset: Vector2, meshes: Dictionary, heightma
 			offset.y + (index.y * TerrainContext.chunk_max_size)
 		)
 
-
 	chunks.add_child(chunk)
 	on_camera_move.connect(chunk.check_distance)
+
 	print('end in ', Time.get_ticks_msec() - time)
 
 
@@ -132,6 +141,8 @@ func _notification(what: int) -> void:
 			compute.queue_free()
 			TerrainContext.chunks.clear()
 
+func ms() -> int:
+	return Time.get_ticks_msec()
 
 class ProcessTask extends Node:
 
